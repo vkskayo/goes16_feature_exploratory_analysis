@@ -81,7 +81,7 @@ def download_data_for_a_day(extent: List[float],
                             yyyymmdd: str, 
                             variable_names: List[str], 
                             bands:List[str],
-                            temporal_resolution: int,
+                            temporal_resolution: int = 10,
                             remove_full_disk_file: bool = True):
     """
     Downloads values of a specific variable from a specific product and for a specific day from GOES-16 satellite.
@@ -120,6 +120,13 @@ def download_data_for_a_day(extent: List[float],
 
         for band in bands:
 
+            # Verifica se o arquivo já existe
+            if os.path.exists(f'{TEMP_DIR}/{yyyymmddhhmn}band{band}_CMI.nc'):
+                print("O arquivo já existe. Pulando download...")
+                continue
+            else:
+                print("O arquivo não existe.")
+
             # Download the full disk file from the Amazon cloud.
             file_name = download_CMI(yyyymmddhhmn, band, TEMP_DIR)
 
@@ -144,68 +151,30 @@ def download_data_for_a_day(extent: List[float],
         # Increment to get the next full disk observation.
         time_step = time_step + timedelta(minutes=temporal_resolution)
 
-def main(argv):
-    # Create an argument parser
-    parser = argparse.ArgumentParser(description="Retrieve GOES16's data for (user-provided) band, variable, and date range.")
+def retrieve_data(days, vars, bands):
     
-    # Add command line arguments for date_ini and date_end
-    parser.add_argument("--date_ini", type=str, required=True, help="Start date (format: YYYY-MM-DD)")
-    parser.add_argument("--date_end", type=str, required=True, help="End date (format: YYYY-MM-DD)")
-    parser.add_argument("--vars", nargs='+', type=str, required=True, help="At least one variable name (CMI, ...)")
-    parser.add_argument("--bands", nargs='+', type=str, required=True, help="At least one channel from goes 16")
-    parser.add_argument("--temporal_resolution", type=int, default=10, help="Temporal resolution of the observations, in minutes (default: 10)")
+    for day in days:
+
+        # TODO - change to cmd line args
+        extent = [-43.890602827150, -23.1339033365138, -43.0483514573222, -22.64972474827293]
+        dest_path = "data/goes16"
+
+        # Convert start_date and end_date to datetime objects
+        from datetime import datetime
+        day_datetime = datetime.strptime(day, '%Y-%m-%d')
   
-    # TODO - change to cmd line args
-    extent = [-43.890602827150, -23.1339033365138, -43.0483514573222, -22.64972474827293]
-    dest_path = "data/goes16"
 
-    args = parser.parse_args()
-    start_date = args.date_ini
-    end_date = args.date_end
-    variable_names = args.vars
-    temporal_resolution = args.temporal_resolution
-    bands = args.bands
+        folder_path = f'data/goes16'
 
-    # Convert start_date and end_date to datetime objects
-    from datetime import datetime
-    start_datetime = datetime.strptime(start_date, '%Y-%m-%d')
-    end_datetime = datetime.strptime(end_date, '%Y-%m-%d')
+        # Verifica se a pasta existe
+        if not os.path.exists(folder_path):
+            # Se não existir, cria a pasta
+            os.makedirs(folder_path)
+            print(f'Pasta criada: {folder_path}')
+        else:
+            print(f'A pasta já existe: {folder_path}')
 
-    folder_path = f'data/goes16'
-
-    # Verifica se a pasta existe
-    if not os.path.exists(folder_path):
-        # Se não existir, cria a pasta
-        os.makedirs(folder_path)
-        print(f'Pasta criada: {folder_path}')
-    else:
-        print(f'A pasta já existe: {folder_path}')
-
-    # Iterate through the range of user-provided days, 
-    # one day at a time, to retrieve corresponding data.
-    current_datetime = start_datetime
-    while current_datetime <= end_datetime:
-        # Ignore winter months
-        if current_datetime.month not in [6, 7, 8]:
-            yyyymmdd = current_datetime.strftime('%Y%m%d')
-            df = download_data_for_a_day(extent, dest_path, yyyymmdd,variable_names, bands, temporal_resolution=temporal_resolution)
-        # Increment the current date by one day
-        current_datetime += timedelta(days=1)
-
-
-if __name__ == "__main__":
-    ### Examples:
-    # python src/python retrieve_goes16_cmi_for_extent.py --date_ini "2024-02-08" --date_end "2024-02-08" --vars CMI --bands 9 13
-
-
-    fmt = "[%(levelname)s] %(funcName)s():%(lineno)i: %(message)s"
-    logging.basicConfig(level=logging.INFO, format = fmt)
-
-    start_time = time.time()  # Record the start time
-
-    main(sys.argv)
-    
-    end_time = time.time()  # Record the end time
-    duration = (end_time - start_time) / 60  # Calculate duration in minutes
-    
-    print(f"Script duration: {duration:.2f} minutes") 
+        if day_datetime.month not in [6, 7, 8]:
+            yyyymmdd = day_datetime.strftime('%Y%m%d')
+            df = download_data_for_a_day(extent, dest_path, yyyymmdd,vars, bands)
+       

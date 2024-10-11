@@ -15,6 +15,7 @@ import logging
 from netCDF4 import Dataset 
 from retrieve_goes16_cmi_for_extent import retrieve_data
 from feature_extractor_profundidade_nuvens import calcular_diferenca_canais
+from feature_extractor_glaciacao import calcular_diferenca_triespectral
 from log import relatorio_features
 
 def main(argv):
@@ -53,22 +54,30 @@ def main(argv):
     ''' Compute the feature(s) '''
 
     if feature == 'profundidade_nuvem':
-        for day in yyyymmdd:
 
+        for day in yyyymmdd:
             calcular_diferenca_canais('9', '13', day, 'data/goes16', 'features/')
-            
+            relatorio_features('features/profundidade_das_nuvens/', 'relatorio_profundidade_nuvens')
+
     elif feature == 'fluxo_ascendente':
-        pass
+
+        for day in yyyymmdd:
+            pass
+
     elif feature == 'tamanho_particula':
-        pass
+
+        for day in yyyymmdd:
+            pass
+
     elif feature == 'glaciacao_topo_nuvem':
-        pass
+
+        for day in yyyymmdd:
+            calcular_diferenca_triespectral('11', '14', '15', day, 'data/goes16', 'features/')
+            relatorio_features('features/glaciacao_topo_nuvem/', 'relatorio_glaciacao_topo_nuvens')
+
     else:
         print("Não é uma feature válida")
         return
-
-    relatorio_features('features/profundidade_das_nuvens/', 'relatorio_profundidade_nuvens')
-    
 
 if __name__ == "__main__":
     ### Examples:

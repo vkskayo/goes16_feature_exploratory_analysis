@@ -7,10 +7,6 @@ import netCDF4 as nc
 def calcular_diferenca_canais(canal1, canal2, yyyymmdd, input_path, output_path):
     """Calcula a diferença entre dois canais de arquivos NetCDF para uma data específica e salva em uma pasta chamada 'profundidade_das_nuvens'."""
     
-    # Caminhos completos para os canais
-    #canal1_full_path = f'{data_path}/{canal1_path}'
-   # canal2_full_path = f'{data_path}/{canal2_path}'
-    
     # Caminho da pasta de saída
     output_dir = os.path.join(output_path, 'profundidade_das_nuvens', yyyymmdd)
     if not os.path.exists(output_dir):

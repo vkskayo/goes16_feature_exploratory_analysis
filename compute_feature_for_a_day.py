@@ -16,6 +16,7 @@ from netCDF4 import Dataset
 from retrieve_goes16_cmi_for_extent import retrieve_data
 from feature_extractor_profundidade_nuvens import calcular_diferenca_canais
 from feature_extractor_glaciacao import calcular_diferenca_triespectral
+from feature_extractor_movimento_vertical import process_vertical_movement
 from log import relatorio_features
 
 def main(argv):
@@ -62,7 +63,9 @@ def main(argv):
     elif feature == 'fluxo_ascendente':
 
         for day in yyyymmdd:
-            pass
+            process_vertical_movement('13', day, 'data/goes16', 'features/')
+            relatorio_features('features/fluxo_ascendente/', 'relatorio_fluxo_ascendente')
+
 
     elif feature == 'tamanho_particula':
 
